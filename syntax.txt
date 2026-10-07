@@ -1,0 +1,125 @@
+syntax.txt
+
+FrLang Syntax Reference
+=======================
+
+Every statement must end with a semicolon.
+Arguments are separated by commas.
+Whitespace between tokens is ignored.
+Variables are dynamically typed: a name can hold a number at one point
+and a string at another. Redefining a variable overwrites both its
+value and its type.
+
+COMMENTS
+--------
+
+A comment starts with '#' and ends at the next semicolon.
+The semicolon that ends a comment also acts as the statement separator.
+
+    # this is a comment;
+    variable(x, 5);   # inline comment after a statement;
+
+Comments may not start in the middle of an identifier. A comment
+without a terminating ';' before end of file throws an error.
+
+FUNCTIONS
+---------
+
+output(value);
+    Prints value to the screen.
+
+variable(name, value);
+variable(type, name, value);
+    Defines or redefines a variable. Redefinition replaces both
+    value and type -- dynamic typing.
+    - type is optional. If omitted, inferred as 'number' or 'string'.
+
+math(var1, operator, var2);
+    Computes var1 operator var2 and stores the result in 'result'.
+    - If either operand is non-numeric, only '+' is allowed (concatenation).
+    - Division and modulo by zero throw an error.
+
+if(var1, operator, var2, function, ...args);
+    Evaluates 'var1 operator var2'. If true, calls 'function' with the
+    remaining arguments. If false, does nothing.
+    - Comparison operators: == != < > <= >=
+    - Both operands must be numeric.
+    - The target function can be a builtin OR a user-defined function.
+    - Nested if works: 'if(a, >, 1, if, b, >, 2, output, "both")'.
+
+define(name, [param1, param2, ...], (body));
+    Defines a new function.
+    - name    : identifier. Cannot be a builtin name.
+    - params  : zero or more parameter names. When the function runs,
+                each parameter is bound to the value of the corresponding
+                argument. Prior bindings of those names are restored
+                afterward, so the function is lexically scoped for its
+                parameters.
+    - body    : a parenthesized sequence of statements separated by ';'.
+                A trailing ';' is added automatically if missing.
+                Cannot be empty.
+
+    Example:
+        define(add, a, b, (math(a, +, b)));
+        add(3, 4);              # result is 7
+        output(result);
+
+    Multi-statement body:
+        define(greet, name, (output("hello, "); output(name)));
+        greet("world");
+
+    Zero parameters:
+        define(hello, (output("hi")));
+        hello();
+
+CALLING USER FUNCTIONS
+----------------------
+
+A user-defined function is called the same way as a builtin:
+
+    name(arg1, arg2, ...);
+
+The number of arguments must match the number of parameters.
+A user function can call other user functions from inside its body,
+but not from inside another function's argument list.
+
+OPERATORS
+---------
+
+Arithmetic (numeric operands):
+    +   addition
+    -   subtraction
+    *   multiplication
+    /   division
+    %   modulo (remainder)
+    ^   exponentiation
+
+String:
+    +   concatenation (when either operand is non-numeric)
+
+Comparison (used by 'math' to return 1/0, and by 'if' to branch):
+    ==  equal
+    !=  not equal
+    <   less than
+    >   greater than
+    <=  less than or equal
+    >=  greater than or equal
+
+EXAMPLES
+--------
+
+# Define and call;
+define(add, a, b, (math(a, +, b)));
+add(3, 4);
+output(result);             # prints 7
+
+# Use with if;
+variable(x, 15);
+define(report, n, (output("value is: "); output(n)));
+if(x, >, 10, report, x);    # prints 'value is:' then '15'
+
+# Compose user functions;
+define(double_it, x, (math(x, *, 2); variable(doubled, result)));
+variable(y, 7);
+double_it(y);
+output(doubled);            # prints 14
